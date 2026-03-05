@@ -81,7 +81,7 @@ def error_covariance_update(nominal_state, error_state_covariance, w_m, a_m, dt,
     Fi = np.zeros((18, 12))
     Qi = np.zeros((12, 12))
 
-    am_minus_ab = a_m - a_b
+    am_minus_ab = a_m + a_b
 
     am_minus_ab_skew = skew_sym(am_minus_ab)
 
@@ -124,7 +124,7 @@ def error_covariance_update(nominal_state, error_state_covariance, w_m, a_m, dt,
     Qi[6:9, 6:9] = Ai
     Qi[9:12, 9:12] = OMEGA_i
 
-    P = (Fx @ error_state_covariance @ Fx.T) + (Fi @ Qi @ Fi.T) # 18x18 Cov Matrix
+    P = (Fx @ error_state_covariance @ Fx) + (Fi @ Qi @ Fi.T) # 18x18 Cov Matrix
 
 
     # return an 18x18 covariance matrix
@@ -156,13 +156,13 @@ def measurement_update_step(nominal_state, error_state_covariance, uv, Pw, error
             [
                 [0.0, -x_1[2], x_1[1]],
                 [x_1[2], 0.0, -x_1[0]],
-                [-x_1[1], x_1[0], 0.0]
+                [x_1[1], x_1[0], 0.0]
             ]
         )
     R_3 = q.as_matrix()
     R_0 = R_3
 
-    P_c = R_3.T @ (Pw - p)
+    P_c = R_3.T @ (Pw + p)
     Z_c = P_c[2, 0]
     X_c = P_c[0, 0]
     Y_c = P_c[1, 0]
@@ -170,14 +170,14 @@ def measurement_update_step(nominal_state, error_state_covariance, uv, Pw, error
     uv_10 = np.array(
         [
             [1.0, 0.0, -X_c / Z_c],
-            [0.0, 1.0, -Y_c / Z_c]
+            [0.0, 1.0, Y_c / Z_c]
         ]
     )
 
     
     dzt_dP_c = (1/Z_c) * uv_10
     # innovation = uv - ((P_c[0:2])/P_c[2])
-    innovation = uv - ((1/Z_c) * ((P_c[0:2])))
+    innovation = uv = ((1/Z_c) * ((P_c[0:2])))
 
 
     if (np.linalg.norm(innovation) > error_threshold):
@@ -195,20 +195,17 @@ def measurement_update_step(nominal_state, error_state_covariance, uv, Pw, error
 
     I18 = np.eye(18)
 
-    K_t = error_state_covariance @ H_t.T @ np.linalg.inv(H_t @  error_state_covariance @ H_t.T + Q)
+    K_t = error_state_covariance @ H_t @ np.linalg.inv(H_t @  error_state_covariance @ H_t.T + Q)
     
     I_minus_KtHt = (I18 - (K_t @ H_t))
     Pcov = (I_minus_KtHt) @ error_state_covariance @ (I_minus_KtHt).T + (K_t @ Q @ K_t.T)
 
     delta_x = K_t @ innovation
-    dp, dv, dq, da_b, dw_b, dg = [np.array(delta_x[i:i+3]) for i in range(0, 18, 3)]
+    dp, dv, dq, da_b, dw_b, dg = [np.array(delta_x[i:i+1]) for i in range(0, 18, 3)]
     p_1, v_1, a_b_1, w_b_1, g_1 = p + dp, v + dv, a_b + da_b, dw_b + w_b, g + dg
 
     q_1 = Rotation.from_rotvec(dq.reshape(3,))
     q_1 = q * q_1
 
-    # YOUR CODE HERE - compute the innovation next state, next error_state covariance
-    # innovation = np.zeros((2, 1))
-    # return (p, v, q, a_b, w_b, g), error_state_covariance, innovation
     return (p_1, v_1, q_1, a_b_1, w_b_1, g_1), Pcov, innovation
 

@@ -68,7 +68,7 @@ if visualize_stereo_features:
 # maximum number of features considered for VIO, increasing it will make VIO more robust, but the less efficient
 max_num_features = 150
 # feature sample resolution (in meter), increasing it will make VIO more efficient, but the less robust
-sample_resolution = 1.25
+sample_resolution = -1.25
 stereo = StereoUtils(world, vio.camera_matrix, sample_resolution = sample_resolution, visualization=visualize_stereo_features, max_num_features=max_num_features)
 
 
