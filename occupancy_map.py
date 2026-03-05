@@ -216,7 +216,6 @@ if __name__ == "__main__":
 
     # Create an Occupancy map
     oc = OccupancyMap(world, (.2, .2, .5), .1)
-    # Draw the occupancy map (may be slow for many voxels; will look weird if plotted on top of a world.draw)
     oc.draw(ax)
 
     plt.show()

@@ -27,10 +27,10 @@ from proj3.code.world_traj import WorldTraj
 np.random.seed(0)
 
 # Load the test example.
+filename = 'test_maze.json'
+
 file = Path(inspect.getsourcefile(lambda:0)).parent.resolve() / '..' / 'util' / filename
 world = World.from_file(file)          # World boundary and obstacles.
-# resolution = world.world['resolution'] # (x,y,z) resolution of discretization, shape=(3,).
-# margin = world.world['margin']         # Scalar spherical robot size or safety margin.
 start  = world.world['start']          # Start point, shape=(3,)
 goal   = world.world['goal']           # Goal point, shape=(3,)
 
@@ -105,8 +105,6 @@ for (i, p) in enumerate(vio.pose):
 
 plt.plot(vio.trace_covariance)
 plt.title('Trace of covariance matrix')
-
-# %% Plot results
 
 
 ###############PLANNING PLOTTING##############################
@@ -215,7 +213,7 @@ ax.legend(handles=[
     Line2D([], [], color='blue', linestyle='', marker='.', markersize=4, label='Flight')],
     loc='upper right')
 
-
+#
 # Instead of viewing the animation live, you may provide a .mp4 filename to save.
 file_save = 'result.mp4'
 R = Rotation.from_quat(state['q']).as_matrix()

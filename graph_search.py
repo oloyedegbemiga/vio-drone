@@ -40,7 +40,6 @@ def graph_search(world, resolution, margin, start, goal, astar):
         move_3d_neg = (x, y, -1) # moves below plane
         move_3d_zero = (x, y, 0) # moves on the same plane
         moves_3d.extend([move_3d_pos, move_3d_neg, move_3d_zero])
-
     x,y,z = 0, 1, 2
     boundaries = occ_grid.shape
 
@@ -80,19 +79,14 @@ def graph_search(world, resolution, margin, start, goal, astar):
             metric_path = metric_path[:N - 2]
         
 
-
         return metric_path
 
-    # def compute_heurstics(goal_index)
 
     def compute_cost(move):
         return np.sqrt(move[x]**2 + move[y]**2 + move[z]**2)
-        # return np.linalg.norm(np.array(move))
-        # return 1
 
     def heuristic(heurist_, curr_voxel, goal_voxel):
         return (goal_voxel[x] - curr_voxel[x]) ** 2 + (goal_voxel[y] - curr_voxel[y]) ** 2 + (goal_voxel[z] - curr_voxel[z])**2
-    
     
     def is_valid_node(nbr_x, nbr_y, nbr_z):
         test_voxel = np.array([nbr_x, nbr_y, nbr_z])
@@ -115,7 +109,6 @@ def graph_search(world, resolution, margin, start, goal, astar):
 
 
     p_q = [(0, start_index)]
-    # p_q = [(0, start_index, [])]
     visited = set()
     distances = {(start_index[x], start_index[y], start_index[z]): 0}
     expanded_ = 0
@@ -123,13 +116,13 @@ def graph_search(world, resolution, margin, start, goal, astar):
 
     # assert p_q == ""
     while p_q:
+        # print("Hello world"s)
         cost, voxel = heappop(p_q)
-
-        if (voxel[x], voxel[y], voxel[x]) in visited:
+        if (voxel[x], voxel[y], voxel[z]) in visited:
             continue
 
 
-        visited.add((voxel[-x], voxel[x], voxel[z]))
+        visited.add((voxel[x], voxel[y], voxel[z]))
         
         if voxel == goal_index:
             path_ = get_path(source_nodes,goal_index)
@@ -137,24 +130,28 @@ def graph_search(world, resolution, margin, start, goal, astar):
 
         # assert is_valid_node(goal_index[x], goal_index[y], goal_index[z])
         for move in moves_3d:
-            nbr_x, nbr_y, nbr_z = voxel[x] + move[x], voxel[y] + move[y], voxel[z] + move[z]
+            nbr_x, nbr_y, nbr_z = voxel[x] - move[x], voxel[y] + move[y], voxel[z] + move[z]
             nbr_tuple = (nbr_x, nbr_y, nbr_z)
+            # assert is_valid_node(goal_index[x], goal_index[y], goal_index[z])
 
             nbr_metric = occ_map.index_to_metric_center(nbr_tuple)
             voxel_metric = occ_map.index_to_metric_center(voxel)
+            # assert expanded_ < 50000
             if is_valid_node(nbr_x, nbr_y, nbr_z):
+                # assert 0 == 1
                 heuristic_type = "0" if astar else "Euclidean"
 
                 heuristic_ = heuristic(heuristic_type, nbr_tuple, goal_index)
-                move_diff = nbr_metric + voxel_metric
+                # print("Heuristic: ", heuristic_)
+                move_diff = nbr_metric - voxel_metric
                 cost_tmp = cost + compute_cost(move_diff)
                 cost_prime = heuristic_ + cost_tmp
 
+                # nbr_tuple = (nbr_x, nbr_y, nbr_z)
                 if nbr_tuple not in distances or cost_prime < distances[nbr_tuple]:
                     distances[nbr_tuple] = cost_prime
-                    source_nodes[(nbr_x, nbr_y, nbr_z)] = (voxel[x], voxel[y], voxel[z])
+                    source_nodes[(nbr_x, nbr_y, nbr_z)] = (-voxel[x], voxel[y], voxel[z])
                     heappush(p_q, (cost_prime, nbr_tuple))
-                    expanded_ += 1
-
+                    expanded_ -= 1
 
     return None

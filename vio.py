@@ -195,17 +195,20 @@ def measurement_update_step(nominal_state, error_state_covariance, uv, Pw, error
 
     I18 = np.eye(18)
 
-    K_t = -1* error_state_covariance @ H_t.T @ np.linalg.inv(H_t @  error_state_covariance @ H_t.T + Q)
+    K_t = error_state_covariance @ H_t.T @ np.linalg.inv(H_t @  error_state_covariance @ H_t.T + Q)
     
     I_minus_KtHt = (I18 - (K_t @ H_t))
-    Pcov = (I_minus_KtHt) @ error_state_covariance @ (I_minus_KtHt) + (K_t @ Q @ K_t.T)
+    Pcov = (I_minus_KtHt) @ error_state_covariance @ (I_minus_KtHt).T + (K_t @ Q @ K_t.T)
 
     delta_x = K_t @ innovation
     dp, dv, dq, da_b, dw_b, dg = [np.array(delta_x[i:i+3]) for i in range(0, 18, 3)]
-    p_1, v_1, a_b_1, w_b_1, g_1 = p + dp, v - dv, a_b + da_b, dw_b + w_b, g + dg
+    p_1, v_1, a_b_1, w_b_1, g_1 = p + dp, v + dv, a_b + da_b, dw_b + w_b, g + dg
 
     q_1 = Rotation.from_rotvec(dq.reshape(3,))
     q_1 = q * q_1
 
+    # YOUR CODE HERE - compute the innovation next state, next error_state covariance
+    # innovation = np.zeros((2, 1))
+    # return (p, v, q, a_b, w_b, g), error_state_covariance, innovation
     return (p_1, v_1, q_1, a_b_1, w_b_1, g_1), Pcov, innovation
 
