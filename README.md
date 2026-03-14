@@ -19,6 +19,3 @@ The code is organized around the main subsystems of an autonomous flight stack:
   measurement update steps for visual-inertial odometry.
 - `sandbox.py`: local experimentation entry point for running and testing the
   modules together.
-
-This project is structured for simulation-based development and coursework in
-robotics, controls, and autonomous aerial navigation.
